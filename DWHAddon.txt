@@ -5,4 +5,3 @@
 ## SavedVariables: DWHAddon_SavedVariables
 
 DWHAddon.lua
-DWHRaidMarker.lua
