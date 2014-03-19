@@ -1,0 +1,8 @@
+## Title: DWHAddon
+## Author: DWH
+## Version: 0.1
+## APIVersion: 100000
+## SavedVariables: DWHAddon_SavedVariables
+
+DWHAddon.lua
+DWHRaidMarker.lua
