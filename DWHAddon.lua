@@ -156,6 +156,14 @@ function DWH.Update()
 	DWH_COMPASS:Update()
 end
 
+local oldData = ZO_MapPin.SetData
+ZO_MapPin.SetData = function( self, pinTypeId, pinTag)
+	local back = GetControl(self.m_Control, "Background")
+	local color = DWH_SETTINGS.markerColor
+	back:SetColor( color[1], color[2], color[3], 1)	
+	oldData(self, pinTypeId, pinTag)
+end
+
 -- Initialize addon event
 EVENT_MANAGER:RegisterForEvent("DWH", EVENT_ADD_ON_LOADED, DWH.Initialize)
 EVENT_MANAGER:RegisterForEvent("DWH", EVENT_LEADER_UPDATE, DWH.LeaderUpdate)
