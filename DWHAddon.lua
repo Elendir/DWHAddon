@@ -157,8 +157,8 @@ end
 
 local oldData = ZO_MapPin.SetData
 ZO_MapPin.SetData = function( self, pinTypeId, pinTag)
-	if(pinTypeId == _G[DWH.pinType] and DWH.vars.LeaderUnitTag ~= nil) then
-		local back = GetControl(self.m_Control, "Background")
+	local back = GetControl(self.m_Control, "Background")
+	if(pinTypeId == _G[DWH.pinType] and DWH.vars.LeaderUnitTag ~= nil) then 
 		local color = DWH_SETTINGS.markerColor
 		back:SetColor( color[1], color[2], color[3], 1)	
 	else
