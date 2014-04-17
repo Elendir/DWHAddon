@@ -6,6 +6,8 @@ DWH.name = "DWHAddon"
 DWH.command = "/dwh"
 DWH.version = 0.01
 
+DWH.maxDistance = 10
+
 DWH.modes = {}
 DWH.modes.target = "target"
 DWH.modes.group = "group"
@@ -18,6 +20,7 @@ DWH.defaults = {
 DWH.pinType = "DWHLeader"
 DWH.pinToolTipCreator = { creator = function(pin) InformationTooltip:AddLine("Raid Leader") end, tooltip = InformationTooltip }
 DWH.pinLayoutData = { level = 159, texture = "EsoUI/Art/Inventory/inventory_tabicon_quest_up.dds", size = 64 }
+DWH.compassLayoutData = { texture = "esoui/art/compass/quest_assistedareapin.dds" , maxDistance = DWH.maxDistance, color = {1, 0, 0} }
 
 function DWH.Initialize(eventCode, addOnName)
 	if(addOnName ~= DWH.name) then return end
@@ -33,51 +36,26 @@ function DWH.Initialize(eventCode, addOnName)
 		DWH.pinToolTipCreator
 	)
 	
+	DWH_COMPASS.Initialize(DWH.compassLayoutData, DWH.UpdateCompass)
+	
 
 	ZO_WorldMap_SetCustomPinEnabled( _G[DWH.pinType], true )
-	ZO_WorldMap_RefreshCustomPinsOfType( _G[DWH.pinType] )
-    -- SetMapPinAssisted( _G[DWH.pinType] , true, 1,1,1)
-	-- SetMapPinContinuousPositionUpdate(_G[DWH.pinType], true, 1,1,1)
-	
-	-- local normalizedX, normalizedZ, heading = GetMapPlayerPosition("player")
 	DWH.SetGroupLeader()
+	DWH.RefreshLeaderPin()
 end
 
 
-local bt = {}
-function DWH.DelayBuffer(key, buffer)
-	if key == nil then return end
-	if bt[key] == nil then bt[key] = {} end
-	bt[key].buffer = buffer or 3
-	bt[key].now = GetFrameTimeMilliseconds()
-	if bt[key].last == nil then bt[key].last = bt[key].now end
-	bt[key].diff = bt[key].now - bt[key].last
-	bt[key].eval = bt[key].diff >= bt[key].buffer
-	if bt[key].eval then bt[key].last = bt[key].now end
-	return bt[key].eval
-end
+
 
 function DWH.SlashCommands(arg) 	
-	
-	if(arg == "stl") then
-		DWH.SetTargetLeader()
-	end
-	if(arg == "sgl") then
-		d( "Setting group leader" )
+	if(arg == "start") then
 		DWH.SetGroupLeader()
 	end
+	
+	if(arg == "stop") then
+		DWH.RemoveLeader()
+	end
 end
-
--- Set Target as Leader
-function DWH.SetTargetLeader()
-	local unitTag = "reticleover"
-	local isPlayer = IsUnitPlayer(unitTag)
-	
-	-- Do nothing if the target isn't a player
-	if(not isPlayer) then return end
-	
-	DWH.SetLeader(unitTag, DWH.modes.target)
-end 
 
 
 -- Set Group Leader as Leader
@@ -92,84 +70,86 @@ function DWH.SetGroupLeader()
 	end	
 	
 	local unitTag = GetGroupLeaderUnitTag()
-	 -- d("The leader is"..unitTag)
-	
-	DWH.SetLeader(unitTag, DWH.modes.group)
+	DWH.SetLeader(unitTag)
 		
 end
 
 
-function DWH.SetLeader(unitTag, mode)
-	if(unitTag == "" or unitTag == nil or mode == "" or mode == nil) then return end
+function DWH.SetLeader(unitTag)
+	if(unitTag == "" or unitTag == nil) then return end
 	DWH.vars.LeaderUnitTag = unitTag
 	DWH.vars.LeaderName = GetUnitName(unitTag)
+	if not isUnitOnline(DWH.LeaderUnitTag)  then
+		d(DWH.vars.LeaderName.." is not connected")
+		return
+	end
 	d("New leader is "..DWH.vars.LeaderName)
-	local leaderZone = GetUnitZone(DWH.vars.LeaderUnitTag)
-	local playerZone = GetUnitZone('player')
-	--d("player zone "..playerZone)
-	--d("leader zone "..leaderZone)
-	DWH.vars.Mode = mode
 	DWH.RefreshLeaderPin()
-	
-	
+end
+
+
+function DWH.UpdateCompass(pinManager)
+	local normalizedX, normalizedY, heading = GetMapPlayerPosition(DWH.vars.LeaderUnitTag)
+	pinManager:UpdateLeaderPosition(normalizedX, normalizedY)
 end
 
 function DWH.UpdateLeaderPin(pinManager)
-	-- Display the marker only if finding a connected leader in the same zone as the player 
-	local leaderZone = GetUnitZone(DWH.vars.LeaderUnitTag)
-	local playerZone = GetUnitZone('player')
-	local sameZone = (leaderZone == playerZone)
-	if(sameZone) then
-		--d("leader in same zone")
-	end
-	if(sameZone and DWH.vars.LeaderUnitTag ~= nil and IsUnitOnline(DWH.LeaderUnitTag)) then
-		local normalizedX, normalizedZ, heading = GetMapPlayerPosition(DWH.vars.LeaderUnitTag)
-		-- local normalizedX, normalizedY = GetMapPing(DWH.vars.LeaderUnitTag)
-		--d("x: "..normalizedX)
-		--d("z: "..normalizedZ)
-		--d("head: "..heading)
-		pinManager:CreatePin( _G[DWH.pinType], "DWHLeader1", normalizedX, normalizedZ)	
-		
-		--ZO_WorldMap:AddMapPin(_G[DWH.pinType], normalizedX, normalizedZ, 10)
-	end
-	-- pinManager:CreatePin( _G[DWH.pinType], "DWHTest", 0.5, 0.2)	
+	local normalizedX, normalizedZ, heading = GetMapPlayerPosition(DWH.vars.LeaderUnitTag)
+	pinManager:CreatePin( _G[DWH.pinType], "DWHLeader1", normalizedX, normalizedZ)	
 end
 
 function DWH.RefreshLeaderPin()
-	-- d("refreshing pin")
-	ZO_WorldMap_RefreshCustomPinsOfType( _G[DWH.pinType] )
+	local leaderZone = GetUnitZone(DWH.vars.LeaderUnitTag)
+	local playerZone = GetUnitZone('player')
+	local sameZone = (leaderZone == playerZone)
+	if(sameZone and DWH.vars.LeaderUnitTag ~= nil and IsUnitOnline(DWH.LeaderUnitTag)) then
+		ZO_WorldMap_RefreshCustomPinsOfType( _G[DWH.pinType] )
+		DWH_COMPASS:RefreshPin()
+	end
 end
 
 
 function DWH.GroupMemberLeft(memberName, reason, wasLocalPlayer)
-	if(memberName == DWH.vars.LeaderName and mode == DWH.modes.group) then
+	if(memberName == DWH.vars.LeaderName) then
 		DWH.RemoveLeader()
 	end
 
 end
 
 function DWH.LeaderUpdate(leaderUnitTag)
-	if(mode == DWH.modes.group) then
-		DWH.SetLeader(leaderUnitTag, DWH.modes.group)
-		DWH.RefreshLeaderPin()
-	end
+	DWH.SetLeader(leaderUnitTag, DWH.modes.group)
+	DWH.RefreshLeaderPin()
 end
 
 
 function DWH.RemoveLeader()
 	DWH.vars.LeaderUnitTag = nil
 	DWH.vars.LeaderName = nil
-	DWH.vars.mode = nil
 	
 	DWH.RefreshLeaderPin()
 end
 
-function DWH.Update()
-	if not DWH.DelayBuffer("Update", 1000) then return; end
-	DWH.RefreshLeaderPin()
-end
+--local bt = {}
+--function DWH.DelayBuffer(key, buffer)
+--	if key == nil then return end
+--	if bt[key] == nil then bt[key] = {} end
+--	bt[key].buffer = buffer or 3
+--	bt[key].now = GetFrameTimeMilliseconds()
+--	if bt[key].last == nil then bt[key].last = bt[key].now end
+--	bt[key].diff = bt[key].now - bt[key].last
+--	bt[key].eval = bt[key].diff >= bt[key].buffer
+--	if bt[key].eval then bt[key].last = bt[key].now end
+--	return bt[key].eval
+--end
+
+--function DWH.Update()
+--	if not DWH.DelayBuffer("Update", 1000) then return; end
+--	DWH.RefreshLeaderPin()
+--end
 
 -- Initialize addon event
 EVENT_MANAGER:RegisterForEvent("DWH", EVENT_ADD_ON_LOADED, DWH.Initialize)
 EVENT_MANAGER:RegisterForEvent("DWH", EVENT_LEADER_UPDATE, DWH.LeaderUpdate)
 EVENT_MANAGER:RegisterForEvent("DWH", EVENT_GROUP_MEMBER_LEFT, DWH.GroupMemberLeft)
+
+EVENT_MANAGER:RegisterForUpdate("DWH", 1000, DWH.RefreshLeaderPin)

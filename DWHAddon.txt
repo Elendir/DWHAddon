@@ -1,8 +1,8 @@
 ## Title: DWHAddon
 ## Author: DWH
-## Version: 0.1
+## Version: 0.9
 ## APIVersion: 100003
 ## SavedVariables: DWHAddon_SavedVariables
 
+Libs/DWHCompassPins/DWHCompassPins.lua
 DWHAddon.lua
-DWHAddon.xml
