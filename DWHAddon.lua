@@ -125,7 +125,7 @@ function DWH.GroupMemberLeft(memberName, reason, wasLocalPlayer)
 end
 
 function DWH.LeaderUpdate(leaderUnitTag)
-	DWH.SetLeader(leaderUnitTag, DWH.modes.group)
+	DWH.SetLeader(leaderUnitTag)
 	--DWH.RefreshLeaderPin()
 end
 
