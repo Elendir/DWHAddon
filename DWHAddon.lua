@@ -161,6 +161,8 @@ ZO_MapPin.SetData = function( self, pinTypeId, pinTag)
 		local back = GetControl(self.m_Control, "Background")
 		local color = DWH_SETTINGS.markerColor
 		back:SetColor( color[1], color[2], color[3], 1)	
+	else
+		back:SetColor( color[1], color[2], color[3], 1)	
 	end
 	oldData(self, pinTypeId, pinTag)
 end
