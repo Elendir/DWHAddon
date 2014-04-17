@@ -4,7 +4,9 @@
 DWH  = {}
 DWH.name = "DWHAddon"
 DWH.command = "/dwh"
-DWH.version = 0.9
+DWH.version = 0.95
+
+DWH.eventsRegistered = true
 
 DWH.defaults = {
 	["LeaderUnitTag"] = nil,
@@ -87,6 +89,11 @@ function DWH.SetLeader(unitTag)
 		return
 	end
 	d("New leader is "..DWH.vars.LeaderName)
+	EVENT_MANAGER:RegisterForUpdate("DWH", DWH_SETTINGS.leaderPositionUpdateInterval, DWH.RefreshLeaderPin)
+	EVENT_MANAGER:RegisterForUpdate("DWHUpdate", DWH_SETTINGS.compassMarkerUpdateInterval, DWH.Update)
+	if(not DWH.eventsRegistered) then
+		DWH.RegisterEvents()
+	end
 	--DWH.RefreshLeaderPin()
 end
 
@@ -95,7 +102,7 @@ function DWH.UpdateCompass(pinManager)
 	local leaderZone = GetUnitZone(DWH.vars.LeaderUnitTag)
 	local playerZone = GetUnitZone('player')
 	local sameZone = (leaderZone == playerZone)
-	if(sameZone and DWH.vars.LeaderUnitTag ~= nil and IsUnitOnline(DWH.LeaderUnitTag)) then
+	if(sameZone and DWH.vars.LeaderUnitTag ~= nil and IsUnitOnline(DWH.vars.LeaderUnitTag)) then
 		local normalizedX, normalizedY, heading = GetMapPlayerPosition(DWH.vars.LeaderUnitTag)
 		pinManager:UpdateLeaderPosition(normalizedX, normalizedY)
 	end
@@ -105,7 +112,7 @@ function DWH.UpdateLeaderPin(pinManager)
 	local leaderZone = GetUnitZone(DWH.vars.LeaderUnitTag)
 	local playerZone = GetUnitZone('player')
 	local sameZone = (leaderZone == playerZone)
-	if(sameZone and DWH.vars.LeaderUnitTag ~= nil and IsUnitOnline(DWH.LeaderUnitTag)) then
+	if(sameZone and DWH.vars.LeaderUnitTag ~= nil and IsUnitOnline(DWH.vars.LeaderUnitTag)) then
 		local normalizedX, normalizedZ, heading = GetMapPlayerPosition(DWH.vars.LeaderUnitTag)
 		pinManager:CreatePin( _G[DWH.pinType], "DWHLeader1", normalizedX, normalizedZ)	
 	end
@@ -121,6 +128,27 @@ function DWH.GroupMemberLeft(memberName, reason, wasLocalPlayer)
 	if(memberName == DWH.vars.LeaderName) then
 		DWH.RemoveLeader()
 	end
+	DWH.CheckLeader()
+
+end
+
+function DWH.GroupMemberJoined(memberName)
+	DWH.CheckLeader()
+end
+
+function DWH.CheckLeader()
+	local leaderTag = GetGroupLeaderUnitTag()
+	if(DWH.vars.LeaderUnitTag ~= leaderTag) then
+		DWH.SetLeader(leaderTag)
+	end
+end
+
+function DWH.ConnectionHandler(unitTag, isOnline)
+	if(unitTag == GetGroupLeaderUnitTag() and isOnline) then
+		DWH.SetLeader(unitTag)
+	elseif(unitTag == DWH.vars.LeaderUnitTag) then
+		DWH.RemoveLeader()
+	end
 
 end
 
@@ -134,6 +162,11 @@ function DWH.RemoveLeader()
 	DWH.vars.LeaderUnitTag = nil
 	DWH.vars.LeaderName = nil
 	DWH.RefreshLeaderPin()
+	EVENT_MANAGER:UnregisterForUpdate("DWH")
+	EVENT_MANAGER:UnregisterForUpdate("DWHUpdate")
+	if(DWH.eventsRegistered) then
+		DWH.UnregisterEvents()
+	end
 end
 
 --local bt = {}
@@ -155,6 +188,23 @@ function DWH.Update()
 	DWH_COMPASS:Update()
 end
 
+function DWH.RegisterEvents()
+	EVENT_MANAGER:RegisterForEvent("DWH", EVENT_LEADER_UPDATE, DWH.LeaderUpdate)
+	EVENT_MANAGER:RegisterForEvent("DWH", EVENT_GROUP_MEMBER_LEFT, DWH.GroupMemberLeft)
+	EVENT_MANAGER:RegisterForEvent("DWH", EVENT_GROUP_MEMBER_JOINED, DWH.GroupMemberJoined)
+	EVENT_MANAGER:RegisterForEvent("DWH", EVENT_GROUP_MEMBER_CONNECTED_STATUS, DWH.ConnectionHandler)	
+	DWH.eventsRegistered = true
+end
+
+function DWH.UnregisterEvents()
+	EVENT_MANAGER:UnregisterForEvent("DWH", EVENT_LEADER_UPDATE)
+	EVENT_MANAGER:UnregisterForEvent("DWH", EVENT_GROUP_MEMBER_LEFT)
+	EVENT_MANAGER:UnregisterForEvent("DWH", EVENT_GROUP_MEMBER_JOINED)
+	EVENT_MANAGER:UnregisterForEvent("DWH", EVENT_GROUP_MEMBER_CONNECTED_STATUS)
+	DWH.eventsRegistered = false
+end
+
+
 local oldData = ZO_MapPin.SetData
 ZO_MapPin.SetData = function( self, pinTypeId, pinTag)
 	local back = GetControl(self.m_Control, "Background")
@@ -169,8 +219,4 @@ end
 
 -- Initialize addon event
 EVENT_MANAGER:RegisterForEvent("DWH", EVENT_ADD_ON_LOADED, DWH.Initialize)
-EVENT_MANAGER:RegisterForEvent("DWH", EVENT_LEADER_UPDATE, DWH.LeaderUpdate)
-EVENT_MANAGER:RegisterForEvent("DWH", EVENT_GROUP_MEMBER_LEFT, DWH.GroupMemberLeft)
-
-EVENT_MANAGER:RegisterForUpdate("DWH", DWH_SETTINGS.leaderPositionUpdateInterval, DWH.RefreshLeaderPin)
-EVENT_MANAGER:RegisterForUpdate("DWHUpdate", DWH_SETTINGS.compassMarkerUpdateInterval, DWH.Update)
+DWH.RegisterEvents()
