@@ -13,7 +13,7 @@ DWH.defaults = {
 }
 DWH.pinType = "DWHLeader"
 DWH.pinToolTipCreator = { creator = function(pin) InformationTooltip:AddLine("Raid Leader") end, tooltip = InformationTooltip }
-DWH.pinLayoutData = { level = 159, texture = "EsoUI/Art/Inventory/inventory_tabicon_quest_up.dds", size = 64, color = DWH_SETTINGS.markerColor  }
+DWH.pinLayoutData = { level = 159, texture = "EsoUI/Art/Inventory/inventory_tabicon_quest_up.dds", size = DWH_SETTINGS.markerSize, color = DWH_SETTINGS.markerColor  }
 DWH.compassLayoutData = { texture = "esoui/art/compass/quest_assistedareapin.dds" , maxDistance = DWH_SETTINGS.maxCompassMarkerDistance, color = DWH_SETTINGS.compassMarkerColor }
 
 function DWH.Initialize(eventCode, addOnName)
