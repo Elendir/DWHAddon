@@ -1,0 +1,11 @@
+DWH_SETTINGS = {}
+-- Colors are in rgb
+DWH_SETTINGS.markerColor = {1,1,0}
+DWH_SETTINGS.compassMarkerColor = {1,0,0}
+DWH_SETTINGS.maxCompassMarkerDistance = 10
+
+
+-- Update frequency of compass marker position
+DWH_SETTINGS.leaderPositionUpdateInterval = 1000 -- milliseconds
+-- Update frequency of compass marker display
+DWH_SETTINGS.compassMarkerUpdateInterval = 10 -- milliseconds
