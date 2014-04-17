@@ -5,4 +5,5 @@
 ## SavedVariables: DWHAddon_SavedVariables
 
 Libs/DWHCompassPins/DWHCompassPins.lua
+DWHSettings.lua
 DWHAddon.lua
