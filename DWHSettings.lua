@@ -1,6 +1,6 @@
 DWH_SETTINGS = {}
 -- Colors are in rgb
-DWH_SETTINGS.markerColor = {1,1,0}
+DWH_SETTINGS.markerColor = {1,0,0}
 DWH_SETTINGS.compassMarkerColor = {1,0,0}
 DWH_SETTINGS.maxCompassMarkerDistance = 10
 

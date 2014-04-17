@@ -124,8 +124,8 @@ function DWH.GroupMemberLeft(memberName, reason, wasLocalPlayer)
 
 end
 
-function DWH.LeaderUpdate(leaderUnitTag)
-	DWH.SetLeader(leaderUnitTag)
+function DWH.LeaderUpdate()
+	DWH.SetLeader(GetGroupLeaderUnitTag())
 	--DWH.RefreshLeaderPin()
 end
 
@@ -133,8 +133,7 @@ end
 function DWH.RemoveLeader()
 	DWH.vars.LeaderUnitTag = nil
 	DWH.vars.LeaderName = nil
-	
-	--DWH.RefreshLeaderPin()
+	DWH.RefreshLeaderPin()
 end
 
 --local bt = {}
@@ -158,9 +157,11 @@ end
 
 local oldData = ZO_MapPin.SetData
 ZO_MapPin.SetData = function( self, pinTypeId, pinTag)
-	local back = GetControl(self.m_Control, "Background")
-	local color = DWH_SETTINGS.markerColor
-	back:SetColor( color[1], color[2], color[3], 1)	
+	if(pinTypeId == _G[DWH.pinType]) then
+		local back = GetControl(self.m_Control, "Background")
+		local color = DWH_SETTINGS.markerColor
+		back:SetColor( color[1], color[2], color[3], 1)	
+	end
 	oldData(self, pinTypeId, pinTag)
 end
 
