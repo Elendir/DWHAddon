@@ -6,7 +6,7 @@ DWH_COMPASS.PinManager = ZO_ControlPool:Subclass()
 
 -- COMPASS -- 
 function DWH_COMPASS:Initialize(layout, callback)
-	self.control = WINDOW_MANAGER:CreateControlFromVirtual("CP_Control", GuiRoot, "ZO_MapPin")
+	self.control = WINDOW_MANAGER:CreateControlFromVirtual("DWH_CP_Control", GuiRoot, "ZO_MapPin")
 	self.control:SetHidden(false)
 	self.pinManager = DWH_COMPASS.PinManager:New(layout, callback)
 	self.FOV = FOV
