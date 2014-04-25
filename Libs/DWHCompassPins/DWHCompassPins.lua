@@ -14,7 +14,7 @@ end
 
 
 function DWH_COMPASS:Update()
-	if(self.pinManager and DWH.vars.LeaderUnitTag ~= nil) then
+	if(self.pinManager) then
 		local heading = GetPlayerCameraHeading()
 		if not heading then
 			return
@@ -29,9 +29,6 @@ function DWH_COMPASS:Update()
 end
 
 function DWH_COMPASS:RefreshPin()
-	if(DWH.vars.LeaderUnitTag == nil) then
-		self.pinManager:RemovePin()
-	end
 	self.pinManager.callback(self.pinManager)
 end
 

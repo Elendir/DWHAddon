@@ -27,7 +27,7 @@ function DWH.Initialize(eventCode, addOnName)
 		DWH.pinType,
 		-- this function is called everytime, the customs pins of the given pinType are to be drawn (map update because of zone/area change or RefreshPins call)
 		DWH.UpdateLeaderPin,
-		DWH.RefreshLeaderPin, -- a function to be called, when the map is resized... no need when using default pins
+		nil, -- a function to be called, when the map is resized... no need when using default pins
 		DWH.pinLayoutData,
 		DWH.pinToolTipCreator
 	)
@@ -36,7 +36,7 @@ function DWH.Initialize(eventCode, addOnName)
 	
 
 	ZO_WorldMap_SetCustomPinEnabled( _G[DWH.pinType], true )
-	DWH.SetGroupLeader()
+	--DWH.SetGroupLeader()
 	DWH.RefreshLeaderPin()
 end
 
@@ -89,12 +89,10 @@ function DWH.SetLeader(unitTag)
 		return
 	end
 	d("New leader is "..DWH.vars.LeaderName)
-	EVENT_MANAGER:RegisterForUpdate("DWH", DWH_SETTINGS.leaderPositionUpdateInterval, DWH.RefreshLeaderPin)
-	EVENT_MANAGER:RegisterForUpdate("DWHUpdate", DWH_SETTINGS.compassMarkerUpdateInterval, DWH.Update)
+	DWH.RegisterUpdateEvents()
 	if(not DWH.eventsRegistered) then
 		DWH.RegisterEvents()
 	end
-	--DWH.RefreshLeaderPin()
 end
 
 
@@ -105,6 +103,8 @@ function DWH.UpdateCompass(pinManager)
 	if(sameZone and DWH.vars.LeaderUnitTag ~= nil and IsUnitOnline(DWH.vars.LeaderUnitTag)) then
 		local normalizedX, normalizedY, heading = GetMapPlayerPosition(DWH.vars.LeaderUnitTag)
 		pinManager:UpdateLeaderPosition(normalizedX, normalizedY)
+	else
+		pinManager:RemovePin()
 	end
 end
 
@@ -122,6 +122,25 @@ function DWH.RefreshLeaderPin()
 	ZO_WorldMap_RefreshCustomPinsOfType( _G[DWH.pinType] )
 	DWH_COMPASS:RefreshPin()
 end
+
+
+function DWH.LeaderPositionUpdate()
+	ZO_WorldMap_RefreshCustomPinsOfType( _G[DWH.pinType] )
+	DWH_COMPASS:RefreshPin()	
+end
+
+
+function DWH.LeaderPositionUpdate() {
+	local leaderZone = GetUnitZone(DWH.vars.LeaderUnitTag)
+	local playerZone = GetUnitZone('player')
+	local sameZone = (leaderZone == playerZone)
+	if(sameZone and DWH.vars.LeaderUnitTag ~= nil and IsUnitOnline(DWH.vars.LeaderUnitTag)) then
+		local normalizedX, normalizedY, heading = GetMapPlayerPosition(DWH.vars.LeaderUnitTag)
+		ZO_WorldMap_RefreshCustomPinsOfType( _G[DWH.pinType] )
+		DWH_COMPASS:UpdatePinPosition(normalizedX, normalizedY)
+	else
+		DWH.RemoveLeader()
+}
 
 
 function DWH.GroupMemberLeft(memberName, reason, wasLocalPlayer)
@@ -162,31 +181,28 @@ function DWH.RemoveLeader()
 	DWH.vars.LeaderUnitTag = nil
 	DWH.vars.LeaderName = nil
 	DWH.RefreshLeaderPin()
-	EVENT_MANAGER:UnregisterForUpdate("DWH")
-	EVENT_MANAGER:UnregisterForUpdate("DWHUpdate")
+	DWH.UnregisterUpdateEvents()
 	if(DWH.eventsRegistered) then
 		DWH.UnregisterEvents()
 	end
 end
 
---local bt = {}
---function DWH.DelayBuffer(key, buffer)
---	if key == nil then return end
---	if bt[key] == nil then bt[key] = {} end
---	bt[key].buffer = buffer or 3
---	bt[key].now = GetFrameTimeMilliseconds()
---	if bt[key].last == nil then bt[key].last = bt[key].now end
---	bt[key].diff = bt[key].now - bt[key].last
---	bt[key].eval = bt[key].diff >= bt[key].buffer
---	if bt[key].eval then bt[key].last = bt[key].now end
---	return bt[key].eval
---end
-
-function DWH.Update()
-	--if not DWH.DelayBuffer("Update", 1000) then return; end
-	--DWH.RefreshLeaderPin()
+function DWH.DisplayUpdate()
 	DWH_COMPASS:Update()
 end
+
+
+
+function DWH.RegisterUpdateEvents()
+	EVENT_MANAGER:RegisterForUpdate("DWHLeaderUpdate", DWH_SETTINGS.leaderPositionUpdateInterval, DWH.LeaderPositionUpdate)
+	EVENT_MANAGER:RegisterForUpdate("DWHDisplayUpdate", DWH_SETTINGS.compassMarkerUpdateInterval, DWH.DisplayUpdate)
+end
+
+function DWH.UnregisterUpdateEvents()
+	EVENT_MANAGER:UnregisterForUpdate("DWHLeaderUpdate")
+	EVENT_MANAGER:UnregisterForUpdate("DWHDisplayUpdate")
+end
+
 
 function DWH.RegisterEvents()
 	EVENT_MANAGER:RegisterForEvent("DWH", EVENT_LEADER_UPDATE, DWH.LeaderUpdate)
