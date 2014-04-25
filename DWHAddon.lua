@@ -4,7 +4,7 @@
 DWH  = {}
 DWH.name = "DWHAddon"
 DWH.command = "/dwh"
-DWH.version = 0.95
+DWH.version = 0.96
 
 DWH.eventsRegistered = true
 
