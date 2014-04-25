@@ -7,6 +7,6 @@ DWH_SETTINGS.maxCompassMarkerDistance = 10
 
 
 -- Update frequency of compass marker position
-DWH_SETTINGS.leaderPositionUpdateInterval = 1000 -- milliseconds
+DWH_SETTINGS.leaderPositionUpdateInterval = 30 -- milliseconds
 -- Update frequency of compass marker display
 DWH_SETTINGS.compassMarkerUpdateInterval = 10 -- milliseconds
