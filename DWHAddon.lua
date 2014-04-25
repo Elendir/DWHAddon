@@ -125,12 +125,6 @@ end
 
 
 function DWH.LeaderPositionUpdate()
-	ZO_WorldMap_RefreshCustomPinsOfType( _G[DWH.pinType] )
-	DWH_COMPASS:RefreshPin()	
-end
-
-
-function DWH.LeaderPositionUpdate()
 	local leaderZone = GetUnitZone(DWH.vars.LeaderUnitTag)
 	local playerZone = GetUnitZone('player')
 	local sameZone = (leaderZone == playerZone)
@@ -195,7 +189,7 @@ end
 
 
 function DWH.RegisterUpdateEvents()
-	EVENT_MANAGER:RegisterForUpdate("DWHLeaderUpdate", DWH_SETTINGS.leaderPositionUpdateInterval, DWH.LeaderPositionUpdate)
+	EVENT_MANAGER:RegisterForUpdate("DWHLeaderUpdate", DWH_SETTINGS.leaderPositionUpdateInterval, DWH.RefreshLeaderPin)
 	EVENT_MANAGER:RegisterForUpdate("DWHDisplayUpdate", DWH_SETTINGS.compassMarkerUpdateInterval, DWH.DisplayUpdate)
 end
 
