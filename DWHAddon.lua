@@ -65,6 +65,11 @@ function DWH.SetGroupLeader()
 		return
 	end	
 	
+	if(isLeader) then 
+		d("You are the leader")
+		return
+	end
+	
 	local unitTag = GetGroupLeaderUnitTag()
 	DWH.SetLeader(unitTag)
 		
