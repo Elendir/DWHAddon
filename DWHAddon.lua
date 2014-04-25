@@ -44,15 +44,6 @@ end
 
 
 function DWH.SlashCommands(arg) 	
-	
-	--if(arg == "stl") then
-	--	DWH.SetTargetLeader()
-	--end
-	--if(arg == "sgl") then
-	--	d( "Setting group leader" )
-	--	DWH.SetGroupLeader()
-	-- end
-	
 	if(arg == "start") then
 		DWH.SetGroupLeader()
 	end
@@ -82,13 +73,17 @@ end
 
 function DWH.SetLeader(unitTag)
 	if(unitTag == "" or unitTag == nil) then return end
-	DWH.vars.LeaderUnitTag = unitTag
-	DWH.vars.LeaderName = GetUnitName(unitTag)
-	if not IsUnitOnline(DWH.vars.LeaderUnitTag)  then
-		d(DWH.vars.LeaderName.." is not connected")
+	leaderName = GetUnitName(unitTag)
+	if not IsUnitOnline(unitTag)  then
+		d(leaderName.." is not connected")
 		return
 	end
-	d("New leader is "..DWH.vars.LeaderName)
+	if leaderName ~= DWH.vars.LeaderName then 
+		d("New leader is "..DWH.vars.LeaderName)
+	end
+	DWH.vars.LeaderUnitTag = unitTag
+	DWH.vars.LeaderName = leaderName
+	
 	DWH.RegisterUpdateEvents()
 	if(not DWH.eventsRegistered) then
 		DWH.RegisterEvents()
