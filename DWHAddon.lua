@@ -130,7 +130,7 @@ function DWH.LeaderPositionUpdate()
 end
 
 
-function DWH.LeaderPositionUpdate() {
+function DWH.LeaderPositionUpdate()
 	local leaderZone = GetUnitZone(DWH.vars.LeaderUnitTag)
 	local playerZone = GetUnitZone('player')
 	local sameZone = (leaderZone == playerZone)
@@ -140,7 +140,8 @@ function DWH.LeaderPositionUpdate() {
 		DWH_COMPASS:UpdatePinPosition(normalizedX, normalizedY)
 	else
 		DWH.RemoveLeader()
-}
+	end
+end
 
 
 function DWH.GroupMemberLeft(memberName, reason, wasLocalPlayer)
