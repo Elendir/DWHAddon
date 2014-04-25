@@ -83,11 +83,12 @@ function DWH.SetLeader(unitTag)
 		d(leaderName.." is not connected")
 		return
 	end
+	DWH.vars.LeaderUnitTag = unitTag
+	DWH.vars.LeaderName = leaderName
 	if leaderName ~= DWH.vars.LeaderName then 
 		d("New leader is "..DWH.vars.LeaderName)
 	end
-	DWH.vars.LeaderUnitTag = unitTag
-	DWH.vars.LeaderName = leaderName
+
 	
 	DWH.RegisterUpdateEvents()
 	if(not DWH.eventsRegistered) then
